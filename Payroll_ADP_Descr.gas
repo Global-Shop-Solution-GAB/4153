@@ -1,0 +1,270 @@
+Program.Sub.ScreenSU.Start
+Gui.F_Main..create
+Gui.F_Main..caption("ADP Entry")
+Gui.F_Main..size(1740,2790)
+Gui.F_Main..position(0,0)
+Gui.F_Main..event(UnLoad,unload)
+Gui.F_Main..alwaysontop(True)
+Gui.F_Main..fontname("arial")
+Gui.F_Main..fontsize(8)
+Gui.F_Main..forecolor(0)
+Gui.F_Main..fontstyle(False,False,False,False,False)
+Gui.F_Main..BackColor(-2147483633)
+Gui.F_Main..controlbox(True)
+Gui.F_Main..maxbutton(False)
+Gui.F_Main..minbutton(True)
+Gui.F_Main..mousepointer(0)
+Gui.F_Main..moveable(True)
+Gui.F_Main..sizeable(False)
+Gui.F_Main..ShowInTaskBar(True)
+Gui.F_Main..titlebar(True)
+Gui.F_Main..MinX(0)
+Gui.F_Main..MinY(0)
+Gui.F_Main.txt1.create(textbox,"",True,1215,315,0,200,400,True,0,"arial",8,-2147483643,1)
+Gui.F_Main.txt1.text("")
+Gui.F_Main.txt1.maxLength(3)
+Gui.F_Main.lbl1.create(label,"ADP Company",True,1095,255,1,200,200,True,0,"arial",8,-2147483633,0)
+Gui.F_Main.txt2.create(textbox,"",True,1215,315,0,200,1200,True,0,"arial",8,-2147483643,1)
+Gui.F_Main.txt2.text("")
+Gui.F_Main.txt2.maxLength(8)
+Gui.F_Main.lbl2.create(label,"Batch Number",True,1095,255,1,200,1000,True,0,"arial",8,-2147483633,0)
+Gui.F_Main.cmdExport.create(button)
+Gui.F_Main.cmdExport.caption("Export")
+Gui.F_Main.cmdExport.visible(True)
+Gui.F_Main.cmdExport.size(975,375)
+Gui.F_Main.cmdExport.zorder(0)
+Gui.F_Main.cmdExport.position(300,1700)
+Gui.F_Main.cmdExport.enabled(True)
+Gui.F_Main.cmdExport.fontname("arial")
+Gui.F_Main.cmdExport.fontsize(8)
+Gui.F_Main.cmdExport.event(Click,Process)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Variable.Global.DSN.Declare(String)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+Gui.F_main..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4153_PayrollADP_DescrVar.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Main.End
+
+Program.Sub.Process.Start
+
+
+F.Intrinsic.Control.SetErrorHandler("Process_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+Gui.F_Main.cmdExport.Enabled(false)
+v.Local.sOtherEarningCode.Declare(string)
+v.Local.fNumHold.Declare(float)
+V.Local.FNumHold2.Declare(float)
+V.Local.iHold.Declare(long)
+
+Variable.local.export.declare(String)
+Variable.local.export.redim(0,6)
+Variable.local.hold.declare(String)
+Variable.local.query.declare(String)
+Variable.Local.I.declare(Long)
+Variable.local.DIR.declare(String)
+Variable.local.date.declare(String)
+Variable.local.file.declare(Long)
+Variable.local.filename.declare(String)
+Variable.local.sResult.declare(String)
+Variable.Local.time.Declare(String)
+Variable.Local.id.Declare(String)
+
+V.Local.CompCode.Declare(String)
+V.Local.Batchid.Declare(String)
+V.Local.fileNo.Declare(String)
+V.Local.FN1.Declare(String)
+V.Local.FN2.Declare(String)
+V.Local.FN3.Declare(String)
+V.Local.FN4.Declare(String)
+V.Local.FN5.Declare(String)
+
+V.Local.shold.Declare(String)
+
+V.Local.CompCode.Set(V.Screen.F_Main!txt1.Text)
+F.Intrinsic.Control.If(V.Local.CompCode.trim,=,"")
+	F.Intrinsic.UI.Msgbox("Must enter an ADP Company Code")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.endif
+
+V.Local.Batchid.Set(V.Screen.F_Main!txt2.text)
+F.Intrinsic.Control.If(V.Local.Batchid.trim,=,"")
+	F.Intrinsic.UI.Msgbox("Must enter a Batch Number")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.endif
+
+Function.Odbc.Connection!Conx.Openconnection(Variable.Ambient.pDSN,Variable.Ambient.PUser,Variable.Ambient.PPass)
+'
+
+Function.Intrinsic.String.Left(Variable.Passed.888888,8,Variable.Local.date)
+Function.Intrinsic.String.Mid(Variable.Passed.888888,9,6,Variable.Local.time)
+Function.Intrinsic.String.Mid(Variable.Passed.888888,15,2,Variable.Local.id)
+
+
+Function.Intrinsic.string.Left(Variable.Screen.F_Main!txt1.Text,3,Variable.Local.CompCode)
+Function.Intrinsic.Control.If(Variable.Local.CompCode.Length,<,3)
+	Function.intrinsic.string.concat(Variable.Local.CompCode,"_",Variable.Local.CompCode)
+Function.Intrinsic.Control.EndIf
+
+Function.Intrinsic.File.Gethandle(Variable.Local.File)
+
+Function.Intrinsic.String.Concat(Variable.Caller.FilesDir,"\EPI",Variable.Local.CompCode,"AA.csv",Variable.Local.Filename)
+Function.Intrinsic.File.Openforwrite(Variable.Local.Filename,Variable.Local.File)
+
+Function.Intrinsic.File.Writeline(Variable.Local.File,"Co Code,Batch ID,File #, Employee Name,Hours 3 Code, Hours 3 Amount,Reg Hours, O/T Hours")
+Function.intrinsic.string.concat("SELECT EMPLOYEE, NAME, TYPE, EC,DESCR, HOURS FROM PYRL_LABOR_XFER WHERE RUN_CYMD = '",Variable.Local.date,"' AND RUN_TIME = '",Variable.Local.time,"'",Variable.Local.query)
+'Function.intrinsic.string.concat("SELECT EMPLOYEE, NAME, TYPE, EC,DESCR, HOURS FROM PYRL_LABOR_XFER","",Variable.Local.query)
+Function.Odbc.Connection!Conx.Openrecordsetro("rstX",Variable.Local.query)
+Function.Intrinsic.Control.dountil(Variable.Odbc.Conx!Rstx.Eof,=,True)
+	Variable.local.export.redim(0,7)
+
+	Function.Intrinsic.string.Left(Variable.Screen.F_Main!txt1.Text,3,Variable.Local.CompCode)
+	F.Intrinsic.String.RPad(V.Local.CompCode," ",3,V.Local.CompCode)
+	Gui.F_Main.txt1.Text(Variable.Local.CompCode)
+	Variable.local.export(0).set(Variable.Local.CompCode)
+
+	Function.Intrinsic.string.Left(Variable.Screen.F_Main!txt2.Text,8,Variable.Local.Batchid)
+	F.Intrinsic.String.RPad(V.Local.Batchid," ",8,V.Local.Batchid)
+	Gui.F_Main.txt2.Text(Variable.Local.Batchid)
+	Variable.local.export(1).set(Variable.Local.Batchid)
+
+	V.Local.fileNo.Set(Variable.Odbc.Conx!Rstx.Fieldval!EMPLOYEE)
+	F.Intrinsic.String.LPad(V.Local.fileNo,"0",6,V.Local.fileNo)
+	Variable.local.export(2).set(V.Local.fileNo)
+	
+	F.Intrinsic.String.LPad(V.ODBC.Conx!rstX.FieldValTrim!NAME," ",30,V.Local.export(3))
+	V.Local.FN2.Set(Variable.Odbc.Conx!Rstx.Fieldvaltrim!TYPE)
+
+
+
+'Doubled time is added to export(6) now and the double of that is going into export(7)
+'7/25/2016 FEQ	
+
+'LOGIC 1
+	Function.Intrinsic.Control.If(Variable.Local.FN2,=,"RT")
+		Variable.local.export(6).set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.LPad(Variable.local.FN4," ",6,V.Local.export(6))
+	F.Intrinsic.Control.EndIf
+
+	Function.Intrinsic.Control.If(Variable.Local.FN2,=,"DT")
+		'Write hours to Reg Hours
+		v.Local.fNumHold.Set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)				
+		Function.Intrinsic.Math.Mult(V.Local.fNumHold,2,V.Local.fNumHold2)
+		Variable.local.export(7).set(V.Local.fNumHold2)					
+		Variable.local.export(6).set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)
+	Function.Intrinsic.Control.elseIf(Variable.Local.FN2,=,"HT")
+		Variable.local.export(5).set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)
+	Function.Intrinsic.Control.elseIf(Variable.Local.FN2,=,"EC")		
+		Variable.local.export(5).set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.LPad(Variable.local.FN3," ",6,V.Local.export(5))
+	F.Intrinsic.Control.EndIf
+	
+
+'OT is now being stored in export(6) and I have comented out the else statement to avoid overwritting the new addition of time from the above modification.
+'7/25/2016 FEQ
+
+'LOGIC 2
+	Function.Intrinsic.Control.If(Variable.Local.FN2,=,"OT")
+		Variable.local.export(7).set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)		
+		'Modified: (6) and (7) the same value
+		Variable.local.export(6).set(Variable.Odbc.Conx!Rstx.Fieldval!Hours)
+		'Function.Intrinsic.Math.Add(Variable.Local.export(6).Float,Variable.Local.export(7).Float,Variable.Local.export(6))
+		'Variable.local.export(6).set(Variable.Odbc.Conx!Rstx.Fieldval!HOURS)
+'	F.Intrinsic.Control.Else
+'		F.Intrinsic.String.LPad(Variable.local.FN5," ",6,V.Local.export(7))
+	F.Intrinsic.Control.EndIf
+	
+	
+	'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'LOGIC 3 (CHANGE LABEL OF HOURS 3 CODE column)	
+'Changed so Only Codes that are not EC will display
+' 9/25/2001 SKT
+
+'Included all cases in one If statement, and added the case "DT"
+'7/25/2016 FEQ
+'OT,RT,DT => Set blank
+'	F.Intrinsic.Control.If(Variable.Local.FN2,=,"DT")
+'	V.Local.export(4).Set("")
+'	F.Intrinsic.Control.EndIf
+	
+	Function.Intrinsic.Control.If(Variable.Local.FN2,=,"OT","OR",Variable.Local.FN2,=,"RT")
+		V.Local.export(4).Set("")
+'	F.Intrinsic.Control.ElseIf(Variable.Local.FN2,=,"RT")
+'		V.Local.export(4).Set("")
+'		F.Intrinsic.String.Left(V.ODBC.Conx!rstX.FieldVal!DESCR,2,Variable.local.export(4))
+	f.Intrinsic.Control.ElseIf (Variable.Local.FN2,=,"HT")
+		V.Local.export(4).Set("H")		
+	F.Intrinsic.Control.ElseIf(Variable.Local.FN2,=,"DT")
+		V.Local.export(4).Set("")
+	F.Intrinsic.Control.Else
+		f.Intrinsic.String.Left(Variable.Odbc.Conx!Rstx.Fieldval!DESCR,2,V.Local.sOtherEarningCode)
+		V.Local.export(4).Set(V.Local.sOtherEarningCode)
+	F.Intrinsic.Control.Endif
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+	Variable.local.hold.set("")
+'	Function.Intrinsic.Control.For(Variable.Local.I,Variable.Local.export.Lbound,Variable.Local.export.Ubound,1)
+'		Function.intrinsic.control.if(Variable.Local.I,=,0)
+'			Variable.Local.hold.Set(Variable.Local.export(0))
+'		Function.intrinsic.control.elseif(Variable.Local.i,<>,0)
+'			Function.intrinsic.string.concat(Variable.Local.hold,",",Variable.Local.export(Variable.Local.I),Variable.Local.hold)
+'		Function.intrinsic.control.endif
+'	Function.intrinsic.control.next(Variable.Local.I)
+	F.Intrinsic.String.JoinCSV(V.Local.export,False,V.Local.hold)
+	'Function.intrinsic.string.concat(Variable.Local.hold,"<CR/LF>",Variable.Local.hold)
+	Function.Intrinsic.File.Writeline(Variable.Local.File,Variable.Local.Hold)
+	Function.Odbc.Conx!Rstx.movenext
+Function.intrinsic.control.loop
+Function.Odbc.Conx!Rstx.Close
+
+Function.Intrinsic.File.Closefile(Variable.Local.File)
+
+'Function.Intrinsic.UI.Msgbox(Variable.Local.file,"Number of file created")
+
+Function.Odbc.Connection!Conx.Close
+Function.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Process_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4153_PayrollADP_DescrVar.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Process.End
+
+Program.Sub.unload.Start
+Function.Intrinsic.Control.End
+
+Program.Sub.unload.End
+
+Program.Sub.Comments.Start
+${$0$}$$}$$}$12:00:00 AM$}$False
+${$3$}$0$}$$}$-1$}$-1$}$$}$1/1/1900$}$Original customer was SMS Millcraft.
+
+This is a re-write of the original script due to many inconsistencies with the original.
+Program.Sub.Comments.End
